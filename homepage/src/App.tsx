@@ -1,23 +1,25 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { CheckCircle, XCircle, RotateCcw } from 'lucide-react';
 
 export default function ClozeTestApp() {
-  const [stage, setStage] = useState('input'); // input, testing, results
-  const [rawText, setRawText] = useState('');
-  const [nthWord, setNthWord] = useState(5);
-  const [words, setWords] = useState([]);
-  const [blanks, setBlanks] = useState([]);
-  const [currentBlankIndex, setCurrentBlankIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState([]);
-  const [currentGuess, setCurrentGuess] = useState('');
+  const [stage, setStage] = useState<'input' | 'testing' | 'results'>('input'); // input, testing, results
+  const [rawText, setRawText] = useState<string>('');
+  const [nthWord, setNthWord] = useState<number>(5);
+  const [words, setWords] = useState<string[]>([]);
+  type Punctuation = { leading: string; trailing: string };
+  const [punctuation, setPunctuation] = useState<Punctuation[]>([]);
+  const [blanks, setBlanks] = useState<number[]>([]);
+  const [currentBlankIndex, setCurrentBlankIndex] = useState<number>(0);
+  const [userAnswers, setUserAnswers] = useState<string[]>([]);
+  const [currentGuess, setCurrentGuess] = useState<string>('');
 
   const startTest = () => {
     if (!rawText.trim()) return;
 
     // Split text into words and punctuation separately
     const tokens = rawText.trim().split(/(\s+)/);
-    const wordArray = [];
-    const punctuationArray = [];
+    const wordArray: string[] = [];
+    const punctuationArray: Punctuation[] = [];
     
     tokens.forEach(token => {
       if (token.trim()) {
@@ -84,11 +86,12 @@ export default function ClozeTestApp() {
     setCurrentBlankIndex(0);
   };
 
-  const renderWord = (word, index) => {
+  const renderWord = (word: string, index: number) => {
     const blankIndex = blanks.indexOf(index);
+    const punc = punctuation[index];
     
     if (blankIndex === -1) {
-      return <span key={index}>{word} </span>;
+      return <span key={index}>{punc.leading}{word}{punc.trailing} </span>;
     }
 
     if (stage === 'testing') {
