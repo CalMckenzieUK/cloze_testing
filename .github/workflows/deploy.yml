@@ -43,7 +43,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload the 'dist' folder (Vite's default build output)
-          path: '.homepage/dist'
+          path: './dist'
 
   # Deployment job
   deploy:
