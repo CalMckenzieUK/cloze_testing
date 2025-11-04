@@ -41,8 +41,8 @@ jobs:
         run: npm install autoprefixer
       - name: install postcss
         run: npm install postcss 
-      - name: initialize tailwindcss
-        run: npx tailwindcss init -p
+      # - name: initialize tailwindcss
+      #   run: npx tailwindcss init -p
       - name: Install dependencies
         run: npm install --include=dev
       - name: Build
