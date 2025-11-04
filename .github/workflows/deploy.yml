@@ -36,7 +36,7 @@ jobs:
       - name: set up vite
         run: npm install -D vite
       - name: testing dependencies
-        run: npm install -D tailwindcss@3 postcss@latest autoprefixer@latest
+        run: npm install -D tailwindcss@3 postcss autoprefixer && npx tailwindcss init -p
       - name: Install dependencies
         run: npm install --include=dev
       - name: Build
