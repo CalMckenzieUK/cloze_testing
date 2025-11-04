@@ -6,12 +6,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm install && npm install -D tailwindcss@latest postcss@latest autoprefixer@latest && tsc -b && vite build",
+    "build": "npm install lucide-react && npm install -D tailwindcss@latest postcss@latest autoprefixer@latest && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "lucide-react": "^0.552.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
