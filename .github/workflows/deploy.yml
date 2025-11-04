@@ -34,7 +34,7 @@ jobs:
           node-version: 20 # Use a current LTS version
           cache: 'npm'
       - name: testing dependencies
-        run: npm install -D tailwindcss@latest postcss@latest autoprefixer@latest && vite build
+        run: npm install vite && npm install -D tailwindcss@latest postcss@latest autoprefixer@latest && vite build
       - name: Install dependencies
         run: npm install
       - name: Build
