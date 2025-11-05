@@ -46,7 +46,7 @@ jobs:
       #- name: Install dependencies
       #  run: npm install --include=dev
       - name: npm install --include=dev
-        run: npm install --include=dev
+        run: npm install --global
       - name: install tailwind
         run: npm install -D tailwindcss@3 
       - name: install postcss
