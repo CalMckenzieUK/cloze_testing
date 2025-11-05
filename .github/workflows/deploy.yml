@@ -54,6 +54,8 @@ jobs:
         with:
           # Upload the 'dist' folder (Vite's default build output)
           path: './dist'
+      - name: list artifact files
+        run: ls -R ./dist
 
   # Deployment job
   deploy:
