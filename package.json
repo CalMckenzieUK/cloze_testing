@@ -1,12 +1,12 @@
 {
-  "name": "homepage",
+  "name": "cloze_testing",
   "private": true,
   "version": "0.0.0",
   "homepage": "https://github.com/CalMckenzieUK/cloze_testing",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm install --global && npm install -D tailwindcss@3 postcss autoprefixer && tsc -b && vite build",
+    "build": "npm install && npm install -D tailwindcss@3 postcss autoprefixer && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
