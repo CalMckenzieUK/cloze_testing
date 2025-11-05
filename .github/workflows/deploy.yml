@@ -50,9 +50,9 @@ jobs:
       - name: install tailwind
         run: npm install -D tailwindcss@3 
       - name: install postcss
-        run: npm install postcss@latest
+        run: npm install postcss
       - name: install autoprefixer  
-        run: npm install autoprefixer@latest
+        run: npm install autoprefixer
       - name: tsc  
         run: tsc -b
       - name: Build
