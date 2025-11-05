@@ -214,13 +214,13 @@ export default function ClozeTestApp() {
             Start testing
           </button>
 
-          <button
+          {/* <button
             onClick={generatePrintout}
             disabled={!rawText.trim()}
             className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
           >
             Prepare text
-          </button>
+          </button> */}
         </div>
       </div>
     );
