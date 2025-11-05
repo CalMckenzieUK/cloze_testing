@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { CheckCircle, XCircle, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CheckCircle, XCircle, RotateCcw, Share2, Copy } from 'lucide-react';
 
 export default function ClozeTestApp() {
-  const [stage, setStage] = useState('input'); // input, testing, results, printout
+  const [stage, setStage] = useState('input');
   const [rawText, setRawText] = useState('');
   const [nthWord, setNthWord] = useState(5);
   const [words, setWords] = useState([]);
@@ -11,11 +11,86 @@ export default function ClozeTestApp() {
   const [currentBlankIndex, setCurrentBlankIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState([]);
   const [currentGuess, setCurrentGuess] = useState('');
+  const [shareKey, setShareKey] = useState('');
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const testId = urlParams.get('test');
+    
+    if (testId) {
+      loadSharedTest(testId);
+    }
+  }, []);
+
+  const loadSharedTest = async (testId) => {
+    try {
+      const result = await window.storage.get(`test:${testId}`, true);
+      if (result && result.value) {
+        const testData = JSON.parse(result.value);
+        setWords(testData.words);
+        setPunctuation(testData.punctuation);
+        setBlanks(testData.blanks);
+        setNthWord(testData.nthWord);
+        setUserAnswers(new Array(testData.blanks.length).fill(''));
+        setCurrentBlankIndex(0);
+        setStage('testing');
+      }
+    } catch (error) {
+      console.error('Error loading shared test:', error);
+    }
+  };
+
+  const generateShareLink = async () => {
+    if (!rawText.trim()) return;
+
+    const tokens = rawText.trim().split(/(\s+)/);
+    const wordArray = [];
+    const punctuationArray = [];
+    
+    tokens.forEach(token => {
+      if (token.trim()) {
+        const match = token.match(/^([^\w]*)(\w+)([^\w]*)$/);
+        if (match) {
+          const [, leading, word, trailing] = match;
+          wordArray.push(word);
+          punctuationArray.push({ leading, trailing });
+        } else if (/\w/.test(token)) {
+          wordArray.push(token);
+          punctuationArray.push({ leading: '', trailing: '' });
+        }
+      }
+    });
+
+    const blankIndices = [];
+    for (let i = nthWord - 1; i < wordArray.length; i += nthWord) {
+      blankIndices.push(i);
+    }
+
+    const testId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+    
+    const testData = {
+      words: wordArray,
+      punctuation: punctuationArray,
+      blanks: blankIndices,
+      nthWord: nthWord
+    };
+
+    try {
+      await window.storage.set(`test:${testId}`, JSON.stringify(testData), true);
+      setShareKey(testId);
+      setWords(wordArray);
+      setPunctuation(punctuationArray);
+      setBlanks(blankIndices);
+      setStage('share');
+    } catch (error) {
+      console.error('Error saving test:', error);
+      alert('Failed to generate share link. Please try again.');
+    }
+  };
 
   const generatePrintout = () => {
     if (!rawText.trim()) return;
 
-    // Split text into words and punctuation separately
     const tokens = rawText.trim().split(/(\s+)/);
     const wordArray = [];
     const punctuationArray = [];
@@ -48,21 +123,18 @@ export default function ClozeTestApp() {
   const startTest = () => {
     if (!rawText.trim()) return;
 
-    // Split text into words and punctuation separately
     const tokens = rawText.trim().split(/(\s+)/);
     const wordArray = [];
     const punctuationArray = [];
     
     tokens.forEach(token => {
       if (token.trim()) {
-        // Separate word from surrounding punctuation
         const match = token.match(/^([^\w]*)(\w+)([^\w]*)$/);
         if (match) {
           const [, leading, word, trailing] = match;
           wordArray.push(word);
           punctuationArray.push({ leading, trailing });
         } else if (/\w/.test(token)) {
-          // Fallback for words without clear punctuation pattern
           wordArray.push(token);
           punctuationArray.push({ leading: '', trailing: '' });
         }
@@ -71,7 +143,6 @@ export default function ClozeTestApp() {
 
     const blankIndices = [];
     
-    // Mark every nth word as a blank
     for (let i = nthWord - 1; i < wordArray.length; i += nthWord) {
       blankIndices.push(i);
     }
@@ -175,20 +246,20 @@ export default function ClozeTestApp() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
         <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Cloze Testing Tool</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Cloze Test Generator</h1>
           <p className="text-gray-600 mb-6">
-          <a href="https://en.wikipedia.org/wiki/Cloze_test" className="text-blue-600 underline">Cloze tests</a> help assess text readability by removing every nth word and checking comprehension.
+            Test text readability by removing every nth word and checking comprehension.
           </p>
 
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Paste your text here:
+              Paste your text:
             </label>
             <textarea
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
               className="w-full h-48 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Paste your text here..."
+              placeholder="Paste the text you want to test here..."
             />
           </div>
 
@@ -211,7 +282,16 @@ export default function ClozeTestApp() {
             disabled={!rawText.trim()}
             className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition mb-3"
           >
-            Start testing
+            Start Test
+          </button>
+
+          <button
+            onClick={generateShareLink}
+            disabled={!rawText.trim()}
+            className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition mb-3 flex items-center justify-center gap-2"
+          >
+            <Share2 size={20} />
+            Generate Shareable Link
           </button>
 
           <button
@@ -219,7 +299,7 @@ export default function ClozeTestApp() {
             disabled={!rawText.trim()}
             className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
           >
-            Prepare text
+            Generate Printout Version
           </button>
         </div>
       </div>
@@ -316,6 +396,54 @@ export default function ClozeTestApp() {
     );
   }
 
+  if (stage === 'share') {
+    const shareUrl = `${window.location.origin}${window.location.pathname}?test=${shareKey}`;
+
+    const copyLink = () => {
+      navigator.clipboard.writeText(shareUrl);
+      alert('Link copied to clipboard!');
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+        <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Shareable Link Generated!</h2>
+          <p className="text-gray-600 mb-6">
+            Share this link with test takers. When they open it, they'll go straight to the test without seeing the original text.
+          </p>
+
+          <div className="bg-gray-50 p-4 rounded-lg mb-6 break-all font-mono text-sm">
+            {shareUrl}
+          </div>
+
+          <div className="flex gap-3 mb-6">
+            <button
+              onClick={copyLink}
+              className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"
+            >
+              <Copy size={20} />
+              Copy Link
+            </button>
+            <button
+              onClick={() => setStage('testing')}
+              className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
+            >
+              Take Test Now
+            </button>
+          </div>
+
+          <button
+            onClick={reset}
+            className="w-full bg-gray-600 text-white py-3 rounded-lg font-semibold hover:bg-gray-700 transition flex items-center justify-center gap-2"
+          >
+            <RotateCcw size={20} />
+            Create New Test
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (stage === 'printout') {
     const renderPrintoutWord = (word, index) => {
       const blankIndex = blanks.indexOf(index);
@@ -324,7 +452,7 @@ export default function ClozeTestApp() {
       if (blankIndex === -1) {
         return `${punct.leading}${word}${punct.trailing}`;
       } else {
-        return `${punct.leading}<removed>${punct.trailing}`;
+        return `${punct.leading}<blank>${punct.trailing}`;
       }
     };
 
@@ -345,7 +473,7 @@ export default function ClozeTestApp() {
           <div className="mb-6 print:hidden">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Printout Version</h2>
             <p className="text-gray-600 mb-4">
-              This version has every {nthWord}th word replaced with &lt;removed&gt; and is ready to share with test takers.
+              This version has every {nthWord}th word replaced with &lt;blank&gt; and is ready to share with test takers.
             </p>
             <div className="flex gap-3">
               <button
