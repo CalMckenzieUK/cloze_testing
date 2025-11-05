@@ -1,25 +1,57 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { CheckCircle, XCircle, RotateCcw } from 'lucide-react';
 
 export default function ClozeTestApp() {
-  const [stage, setStage] = useState<'input' | 'testing' | 'results'>('input'); // input, testing, results
-  const [rawText, setRawText] = useState<string>('');
-  const [nthWord, setNthWord] = useState<number>(5);
-  const [words, setWords] = useState<string[]>([]);
-  type Punctuation = { leading: string; trailing: string };
-  const [punctuation, setPunctuation] = useState<Punctuation[]>([]);
-  const [blanks, setBlanks] = useState<number[]>([]);
-  const [currentBlankIndex, setCurrentBlankIndex] = useState<number>(0);
-  const [userAnswers, setUserAnswers] = useState<string[]>([]);
-  const [currentGuess, setCurrentGuess] = useState<string>('');
+  const [stage, setStage] = useState('input'); // input, testing, results, printout
+  const [rawText, setRawText] = useState('');
+  const [nthWord, setNthWord] = useState(5);
+  const [words, setWords] = useState([]);
+  const [punctuation, setPunctuation] = useState([]);
+  const [blanks, setBlanks] = useState([]);
+  const [currentBlankIndex, setCurrentBlankIndex] = useState(0);
+  const [userAnswers, setUserAnswers] = useState([]);
+  const [currentGuess, setCurrentGuess] = useState('');
+
+  const generatePrintout = () => {
+    if (!rawText.trim()) return;
+
+    // Split text into words and punctuation separately
+    const tokens = rawText.trim().split(/(\s+)/);
+    const wordArray = [];
+    const punctuationArray = [];
+    
+    tokens.forEach(token => {
+      if (token.trim()) {
+        const match = token.match(/^([^\w]*)(\w+)([^\w]*)$/);
+        if (match) {
+          const [, leading, word, trailing] = match;
+          wordArray.push(word);
+          punctuationArray.push({ leading, trailing });
+        } else if (/\w/.test(token)) {
+          wordArray.push(token);
+          punctuationArray.push({ leading: '', trailing: '' });
+        }
+      }
+    });
+
+    const blankIndices = [];
+    for (let i = nthWord - 1; i < wordArray.length; i += nthWord) {
+      blankIndices.push(i);
+    }
+
+    setWords(wordArray);
+    setPunctuation(punctuationArray);
+    setBlanks(blankIndices);
+    setStage('printout');
+  };
 
   const startTest = () => {
     if (!rawText.trim()) return;
 
     // Split text into words and punctuation separately
     const tokens = rawText.trim().split(/(\s+)/);
-    const wordArray: string[] = [];
-    const punctuationArray: Punctuation[] = [];
+    const wordArray = [];
+    const punctuationArray = [];
     
     tokens.forEach(token => {
       if (token.trim()) {
@@ -68,8 +100,8 @@ export default function ClozeTestApp() {
   const calculateResults = () => {
     let correct = 0;
     blanks.forEach((blankIdx, i) => {
-      const original = words[blankIdx].toLowerCase().replace(/[.,!?;:]/g, '');
-      const answer = userAnswers[i].toLowerCase().replace(/[.,!?;:]/g, '');
+      const original = words[blankIdx].toLowerCase();
+      const answer = userAnswers[i].toLowerCase();
       if (original === answer) correct++;
     });
     return {
@@ -86,37 +118,41 @@ export default function ClozeTestApp() {
     setCurrentBlankIndex(0);
   };
 
-  const renderWord = (word: string, index: number) => {
+  const renderWord = (word, index) => {
     const blankIndex = blanks.indexOf(index);
-    const punc = punctuation[index];
+    const punct = punctuation[index] || { leading: '', trailing: '' };
     
     if (blankIndex === -1) {
-      return <span key={index}>{punc.leading}{word}{punc.trailing} </span>;
+      return <span key={index}>{punct.leading}{word}{punct.trailing} </span>;
     }
 
     if (stage === 'testing') {
       const isCurrentBlank = blankIndex === currentBlankIndex;
       return (
-        <span
-          key={index}
-          className={`inline-block px-2 py-1 mx-1 border-b-2 min-w-[80px] text-center ${
-            isCurrentBlank
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-400 bg-gray-50'
-          }`}
-        >
-          {isCurrentBlank ? '?' : userAnswers[blankIndex] || '_____'}
+        <span key={index}>
+          {punct.leading}
+          <span
+            className={`inline-block px-2 py-1 mx-1 border-b-2 min-w-[80px] text-center ${
+              isCurrentBlank
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-400 bg-gray-50'
+            }`}
+          >
+            {isCurrentBlank ? <span className="font-bold">?</span> : userAnswers[blankIndex] || '_____'}
+          </span>
+          {punct.trailing}{' '}
         </span>
       );
     }
 
     if (stage === 'results') {
-      const original = word.toLowerCase().replace(/[.,!?;:]/g, '');
-      const answer = userAnswers[blankIndex].toLowerCase().replace(/[.,!?;:]/g, '');
+      const original = word.toLowerCase();
+      const answer = userAnswers[blankIndex].toLowerCase();
       const isCorrect = original === answer;
 
       return (
-        <span key={index} className="inline-block mx-1">
+        <span key={index}>
+          {punct.leading}
           <span
             className={`px-2 py-1 rounded ${
               isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -129,6 +165,7 @@ export default function ClozeTestApp() {
               ({userAnswers[blankIndex]})
             </span>
           )}
+          {punct.trailing}{' '}
         </span>
       );
     }
@@ -138,20 +175,20 @@ export default function ClozeTestApp() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
         <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Cloze Test Generator</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Cloze Testing Tool</h1>
           <p className="text-gray-600 mb-6">
-            Test text readability by removing every nth word and checking comprehension.
+          <a href="https://en.wikipedia.org/wiki/Cloze_test" className="text-blue-600 underline">Cloze tests</a> help assess text readability by removing every nth word and checking comprehension.
           </p>
 
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Paste your text:
+              Paste your text here:
             </label>
             <textarea
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
               className="w-full h-48 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Paste the text you want to test here..."
+              placeholder="Paste your text here..."
             />
           </div>
 
@@ -172,9 +209,17 @@ export default function ClozeTestApp() {
           <button
             onClick={startTest}
             disabled={!rawText.trim()}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition mb-3"
           >
-            Start Test
+            Start testing
+          </button>
+
+          <button
+            onClick={generatePrintout}
+            disabled={!rawText.trim()}
+            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+          >
+            Prepare text
           </button>
         </div>
       </div>
@@ -266,6 +311,70 @@ export default function ClozeTestApp() {
             <RotateCcw size={20} />
             Start New Test
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (stage === 'printout') {
+    const renderPrintoutWord = (word, index) => {
+      const blankIndex = blanks.indexOf(index);
+      const punct = punctuation[index] || { leading: '', trailing: '' };
+      
+      if (blankIndex === -1) {
+        return `${punct.leading}${word}${punct.trailing}`;
+      } else {
+        return `${punct.leading}<removed>${punct.trailing}`;
+      }
+    };
+
+    const printoutText = words.map((word, index) => renderPrintoutWord(word, index)).join(' ');
+
+    const handlePrint = () => {
+      window.print();
+    };
+
+    const handleCopy = () => {
+      navigator.clipboard.writeText(printoutText);
+      alert('Text copied to clipboard!');
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
+          <div className="mb-6 print:hidden">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Printout Version</h2>
+            <p className="text-gray-600 mb-4">
+              This version has every {nthWord}th word replaced with &lt;removed&gt; and is ready to share with test takers.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handlePrint}
+                className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+              >
+                Print
+              </button>
+              <button
+                onClick={handleCopy}
+                className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
+              >
+                Copy to Clipboard
+              </button>
+              <button
+                onClick={reset}
+                className="flex-1 bg-gray-600 text-white py-3 rounded-lg font-semibold hover:bg-gray-700 transition flex items-center justify-center gap-2"
+              >
+                <RotateCcw size={20} />
+                Back
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white p-8 border-2 border-gray-300 rounded-lg">
+            <div className="text-lg leading-relaxed whitespace-pre-wrap font-serif">
+              {printoutText}
+            </div>
+          </div>
         </div>
       </div>
     );
