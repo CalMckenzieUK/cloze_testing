@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm install -D tailwindcss@3 postcss@latest autoprefixer@latest",
+    "build": "npm install -D tailwindcss@3 postcss@latest autoprefixer@latest && jsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -24,6 +24,7 @@
     "tailwindcss": "^3.4.18"
   },
   "dependencies": {
+    "tsc": "^2.0.4",
     "vite": "^7.2.0"
   }
 }

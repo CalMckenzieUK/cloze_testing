@@ -33,18 +33,20 @@ jobs:
         # with:
         #   node-version: 20 # Use a current LTS version
         #   cache: 'npm'
-      - name: set up vite
-        run: npm install -D vite
-      - name: testing dependencies
-        run: npm install -D tailwindcss@3 
-      - name: install autoprefixer 
-        run: npm install autoprefixer
-      - name: install postcss
-        run: npm install postcss 
+      #- name: set up vite
+      #  run: npm install -D vite
+      #- name: testing dependencies
+      #  run: npm install -D tailwindcss@3 
+      #- name: install autoprefixer 
+      #  run: npm install autoprefixer
+      #- name: install postcss
+      #  run: npm install postcss 
       # - name: initialize tailwindcss
       #   run: npx tailwindcss init -p
-      - name: Install dependencies
-        run: npm install --include=dev
+      #- name: Install dependencies
+      #  run: npm install --include=dev
+      - name: everything
+        run: npm install && npm install -D tailwindcss@3 postcss@latest autoprefixer@latest && jsc -b && vite build
       - name: Build
         run: npm run build
       - name: Setup Pages
