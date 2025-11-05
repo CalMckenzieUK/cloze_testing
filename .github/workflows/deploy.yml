@@ -48,7 +48,7 @@ jobs:
       - name: npm install --include=dev
         run: npm install lucide-react
       - name: install tailwind
-        run: npm install -D tailwindcss@3 
+        run: npm install -D tailwindcss
       - name: install postcss
         run: npm install postcss
       - name: install autoprefixer  
