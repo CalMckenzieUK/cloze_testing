@@ -4,6 +4,7 @@ import { defineConfig } from 'vite'
 import tailwindcss from 'tailwindcss' // IMPORT THIS
 
 export default defineConfig({
+  base: '/cloze_testing/',
   css: {
     postcss: {
       plugins: [tailwindcss()
