@@ -46,7 +46,7 @@ jobs:
       #- name: Install dependencies
       #  run: npm install --include=dev
       - name: everything
-        run: npm install && npm install -D tailwindcss@3 postcss@latest autoprefixer@latest && jsc -b && vite build
+        run: npm install && npm install -D tailwindcss@3 postcss@latest autoprefixer@latest && tsc -b && vite build
       - name: Build
         run: npm run build
       - name: Setup Pages
