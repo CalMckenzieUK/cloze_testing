@@ -28,11 +28,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      # - name: Set up Node.js
-      #   uses: actions/setup-node@v4
-        # with:
-        #   node-version: 20 # Use a current LTS version
-        #   cache: 'npm'
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20 # Use a current LTS version
+          cache: 'npm'
       #- name: set up vite
       #  run: npm install -D vite
       #- name: testing dependencies
@@ -45,8 +45,8 @@ jobs:
       #   run: npx tailwindcss init -p
       #- name: Install dependencies
       #  run: npm install --include=dev
-      - name: npm install
-        run: npm install 
+      - name: npm install --include=dev
+        run: npm install --include=dev
       - name: install tailwind
         run: npm install -D tailwindcss@3 
       - name: install postcss
