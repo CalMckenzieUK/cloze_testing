@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm install && npm install -D tailwindcss@3 postcss autoprefixer && ./node_modules/vite/bin/vite.js build",
+    "build": "./node_modules/vite/bin/vite.js build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
