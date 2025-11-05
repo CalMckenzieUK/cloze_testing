@@ -45,10 +45,20 @@ jobs:
       #   run: npx tailwindcss init -p
       #- name: Install dependencies
       #  run: npm install --include=dev
-      - name: everything
-        run: npm install && npm install -D tailwindcss@3 postcss@latest autoprefixer@latest && tsc -b && vite build
+      - name: npm install
+        run: npm install 
+      - name: install tailwind
+        run: npm install -D tailwindcss@3 
+      - name: install postcss
+        run: npm install postcss@latest
+      - name: install autoprefixer  
+        run: npm install autoprefixer@latest
+      - name: tsc  
+        run: tsc -b
       - name: Build
-        run: npm run build
+        run: vite build
+      # - name: Build
+      #   run: npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
